@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       hf_token: hfToken as `hf_${string}`,
     });
 
-    const result = await client.predict('/predict', {
+    const result = await client.predict('/generate_reading', {
       question: question.trim(),
       reading_type: READING_TYPE_MAP[readingType],
     });
