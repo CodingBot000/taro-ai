@@ -35,7 +35,7 @@ const translations = {
     loadingNote: '첫 요청은 최대 1분 정도 걸릴 수 있어요',
 
     // 결과
-    resultTitle: '별빛의 해석',
+    resultTitle: '리더의 해석',
     drawnCards: '뽑힌 카드',
     interpretation: '해석',
     readAgain: '다시 뽑기',
@@ -48,7 +48,7 @@ const translations = {
     errorNetwork: '네트워크 연결을 확인해주세요.',
 
     // 푸터
-    footerText: '별빛 타로는 AI 기반 엔터테인먼트 서비스입니다. 중요한 결정에 대해서는 전문가와 상담하세요.',
+    footerText: '본 타로는 AI 기반 엔터테인먼트 서비스입니다. 중요한 결정에 대해서는 전문가와 상담하세요.',
   },
 
   en: {

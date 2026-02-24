@@ -35,7 +35,7 @@ export default function ReadingForm({ onSubmit, isLoading, locale = 'ko' }: Read
             onClick={() => setReadingType('one-card')}
             className={`glass-panel p-4 text-center transition-all duration-300 cursor-pointer ${
               readingType === 'one-card'
-                ? 'border-[var(--color-accent-gold)] shadow-[0_0_20px_rgba(212,160,23,0.2)]'
+                ? 'border-[var(--color-accent-gold)] shadow-[0_0_30px_rgba(212,160,23,0.5)]'
                 : 'hover:border-[var(--color-accent-purple)]'
             }`}
           >
@@ -49,7 +49,7 @@ export default function ReadingForm({ onSubmit, isLoading, locale = 'ko' }: Read
             onClick={() => setReadingType('three-card')}
             className={`glass-panel p-4 text-center transition-all duration-300 cursor-pointer ${
               readingType === 'three-card'
-                ? 'border-[var(--color-accent-gold)] shadow-[0_0_20px_rgba(212,160,23,0.2)]'
+                ? 'border-[var(--color-accent-gold)] shadow-[0_0_30px_rgba(212,160,23,0.5)]'
                 : 'hover:border-[var(--color-accent-purple)]'
             }`}
           >
