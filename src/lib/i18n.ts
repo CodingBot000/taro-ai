@@ -8,7 +8,7 @@ export const DEFAULT_LOCALE: Locale = 'ko';
 const translations = {
   ko: {
     // 헤더 / 브랜딩
-    siteName: '별빛 타로',
+    siteName: '타로',
     siteSubtitle: 'AI가 읽어주는 당신의 별자리',
 
     // 리딩 타입
@@ -24,7 +24,7 @@ const translations = {
     submitting: '카드를 섞고 있어요...',
 
     // 로딩 상태
-    loadingTitle: '별빛이 카드를 읽고 있어요',
+    loadingTitle: '카드를 읽고 있어요',
     loadingMessages: [
       '카드를 섞고 있어요...',
       '별자리의 기운을 모으고 있어요...',
