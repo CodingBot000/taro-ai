@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Gradio Space 호출
-    const spaceUrl = process.env.HF_SPACE_URL || 'AutoBot000/tarot-reading';
+    const spaceUrl = process.env.HF_SPACE_URL!;
     const client = await Client.connect(spaceUrl, {
       hf_token: hfToken as `hf_${string}`,
     });
