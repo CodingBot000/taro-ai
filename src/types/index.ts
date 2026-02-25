@@ -6,6 +6,12 @@ export const READING_TYPE_MAP: Record<ReadingType, string> = {
   'three-card': '쓰리카드 (과거/현재/미래)',
 };
 
+export interface CardData {
+  id: string;
+  name: string;
+  direction: string;
+}
+
 export interface TarotRequest {
   question: string;
   readingType: ReadingType;
@@ -14,6 +20,7 @@ export interface TarotRequest {
 export interface TarotResponse {
   cards: string;
   interpretation: string;
+  cardData: CardData[];
 }
 
 export interface TarotError {

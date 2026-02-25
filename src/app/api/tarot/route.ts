@@ -83,9 +83,18 @@ export async function POST(request: NextRequest) {
 
     const data = result.data as string[];
 
+    // data[2]: 카드 JSON (id, name, direction 포함)
+    let cardData = [];
+    try {
+      cardData = JSON.parse(data[2] || '[]');
+    } catch {
+      cardData = [];
+    }
+
     const response: TarotResponse = {
       cards: data[0] || '',
       interpretation: data[1] || '',
+      cardData,
     };
 
     return NextResponse.json(response);

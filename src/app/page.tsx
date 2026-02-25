@@ -78,6 +78,7 @@ export default function Home() {
         {appState === 'result' && result && (
           <ReadingResult
             cards={result.cards}
+            cardData={result.cardData}
             interpretation={result.interpretation}
             onReset={handleReset}
           />
@@ -95,7 +96,7 @@ export default function Home() {
       {/* 푸터 */}
       <footer className="relative z-10 text-center pb-6 px-4">
         <p className="text-xs text-[var(--color-text-muted)] font-body max-w-md mx-auto">
-          별빛 타로는 AI 기반 엔터테인먼트 서비스입니다.
+          본 타로는 AI 기반 엔터테인먼트 서비스입니다.
           중요한 결정에 대해서는 전문가와 상담하세요.
         </p>
       </footer>

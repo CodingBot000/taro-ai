@@ -1,29 +1,28 @@
 'use client';
 
 import { getTranslations, type Locale } from '@/lib/i18n';
+import type { CardData } from '@/types';
 import TarotCard from './TarotCard';
 
 interface ReadingResultProps {
   cards: string;
+  cardData: CardData[];
   interpretation: string;
   onReset: () => void;
   locale?: Locale;
 }
 
-interface ParsedCard {
-  name: string;
-  isReversed: boolean;
-  position?: string; // 과거/현재/미래 (쓰리카드용)
-}
+const POSITION_LABELS = ['과거', '현재', '미래'];
 
 export default function ReadingResult({
   cards,
+  cardData,
   interpretation,
   onReset,
   locale = 'ko',
 }: ReadingResultProps) {
   const t = getTranslations(locale);
-  const parsedCards = parseCards(cards);
+  const isThreeCard = cardData.length === 3;
 
   return (
     <div className="relative z-10 max-w-2xl mx-auto px-4 animate-fade-in">
@@ -34,22 +33,23 @@ export default function ReadingResult({
         </h2>
 
         <div className="flex justify-center items-end gap-4 sm:gap-6 mb-4 flex-wrap">
-          {parsedCards.map((card, index) => (
-            <div key={index} className="flex flex-col items-center animate-slide-up"
+          {cardData.map((card, index) => (
+            <div key={card.id} className="flex flex-col items-center animate-slide-up"
               style={{ animationDelay: `${index * 300}ms` }}
             >
               {/* 포지션 라벨 (과거/현재/미래) */}
-              {card.position && (
+              {isThreeCard && (
                 <div className="text-xs text-[var(--color-text-muted)] mb-2 font-body tracking-wider">
-                  {card.position}
+                  {POSITION_LABELS[index]}
                 </div>
               )}
 
               <TarotCard
+                cardId={card.id}
                 cardName={card.name}
-                isReversed={card.isReversed}
+                isReversed={card.direction === '역방향'}
                 flipDelay={500 + index * 600}
-                size={parsedCards.length === 1 ? 'lg' : 'md'}
+                size={cardData.length === 1 ? 'lg' : 'md'}
               />
 
               {/* 카드 이름 */}
@@ -57,7 +57,7 @@ export default function ReadingResult({
                 <div className="text-sm font-heading text-[var(--color-text-primary)]">
                   {card.name}
                 </div>
-                {card.isReversed && (
+                {card.direction === '역방향' && (
                   <div className="text-xs text-red-400/70 mt-0.5">역방향</div>
                 )}
               </div>
@@ -101,57 +101,4 @@ export default function ReadingResult({
       </div>
     </div>
   );
-}
-
-/**
- * Gradio API에서 반환된 카드 텍스트를 파싱
- *
- * 가능한 포맷들:
- * - "마법사 (정방향)"
- * - "과거: 마법사 (정방향)\n현재: 달 (역방향)\n미래: 태양 (정방향)"
- * - "The Fool (Upright)"
- * - 또는 기타 자유 형식
- */
-function parseCards(cardsText: string): ParsedCard[] {
-  const lines = cardsText.split('\n').filter((l) => l.trim());
-  const parsed: ParsedCard[] = [];
-
-  for (const line of lines) {
-    const isReversed =
-      line.includes('역방향') ||
-      line.includes('Reversed') ||
-      line.includes('reversed');
-
-    // "과거:" / "현재:" / "미래:" 같은 포지션 추출
-    let position: string | undefined;
-    const posMatch = line.match(/^(과거|현재|미래|Past|Present|Future)\s*[:：]/i);
-    if (posMatch) {
-      position = posMatch[1];
-    }
-
-    // 카드 이름 추출 (포지션, 방향 텍스트 제거)
-    let name = line;
-    if (posMatch) {
-      name = name.replace(posMatch[0], '');
-    }
-    name = name
-      .replace(/\(정방향\)|\(역방향\)|\(Upright\)|\(Reversed\)/gi, '')
-      .replace(/정방향|역방향|Upright|Reversed/gi, '')
-      .replace(/[-–—]/g, '')
-      .trim();
-
-    if (name) {
-      parsed.push({ name, isReversed, position });
-    }
-  }
-
-  // 파싱 실패 시 전체 텍스트를 하나의 카드로 표시
-  if (parsed.length === 0 && cardsText.trim()) {
-    parsed.push({
-      name: cardsText.trim(),
-      isReversed: cardsText.includes('역방향') || cardsText.includes('Reversed'),
-    });
-  }
-
-  return parsed;
 }
