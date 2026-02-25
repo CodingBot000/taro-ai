@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { getTranslations, type Locale } from '@/lib/i18n';
+import { validateQuestion } from '@/utils/validateQuestion';
 import type { ReadingType } from '@/types';
 
 interface ReadingFormProps {
@@ -14,10 +15,19 @@ export default function ReadingForm({ onSubmit, isLoading, locale = 'ko' }: Read
   const t = getTranslations(locale);
   const [question, setQuestion] = useState('');
   const [readingType, setReadingType] = useState<ReadingType>('one-card');
+  const [validationError, setValidationError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!question.trim() || isLoading) return;
+    if (isLoading) return;
+
+    const { isValid, errorMessage } = validateQuestion(question);
+    if (!isValid) {
+      setValidationError(errorMessage);
+      return;
+    }
+
+    setValidationError('');
     onSubmit(question.trim(), readingType);
   };
 
@@ -64,15 +74,20 @@ export default function ReadingForm({ onSubmit, isLoading, locale = 'ko' }: Read
       <div className="mb-6">
         <textarea
           value={question}
-          onChange={(e) => setQuestion(e.target.value)}
+          onChange={(e) => { setQuestion(e.target.value); setValidationError(''); }}
           placeholder={t.questionPlaceholder}
           className="mystic-textarea"
           rows={3}
           maxLength={500}
           disabled={isLoading}
         />
-        <div className="text-right text-xs text-[var(--color-text-muted)] mt-1">
-          {question.length}/500
+        <div className="flex justify-between text-xs mt-1">
+          {validationError ? (
+            <span className="text-red-400">{validationError}</span>
+          ) : (
+            <span />
+          )}
+          <span className="text-[var(--color-text-muted)]">{question.length}/500</span>
         </div>
       </div>
 
