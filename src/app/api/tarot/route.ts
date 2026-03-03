@@ -36,7 +36,11 @@ export async function POST(request: NextRequest) {
 
     // 요청 파싱
     const body = await request.json();
-    const { question, readingType } = body as { question: string; readingType: ReadingType };
+    const { question, readingType, selectedCardsJson } = body as {
+      question: string;
+      readingType: ReadingType;
+      selectedCardsJson: string;
+    };
 
     // 입력 유효성 검사
     if (!question || typeof question !== 'string' || question.trim().length === 0) {
@@ -60,6 +64,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!selectedCardsJson || typeof selectedCardsJson !== 'string') {
+      return NextResponse.json(
+        { error: '카드를 선택해주세요.', code: 'INVALID_CARDS' } as TarotError,
+        { status: 400 }
+      );
+    }
+
     // HuggingFace 토큰 확인
     const hfToken = process.env.HF_TOKEN;
     if (!hfToken) {
@@ -79,22 +90,24 @@ export async function POST(request: NextRequest) {
     const result = await client.predict('/generate_reading', {
       question: question.trim(),
       reading_type: READING_TYPE_MAP[readingType],
+      selected_cards_json: selectedCardsJson,
     });
 
-    const data = result.data as string[];
+    // 백엔드가 단일 JSON 문자열을 반환
+    const rawResult = (result.data as string[])[0];
+    const parsed = JSON.parse(rawResult);
 
-    // data[2]: 카드 JSON (id, name, direction 포함)
-    let cardData = [];
-    try {
-      cardData = JSON.parse(data[2] || '[]');
-    } catch {
-      cardData = [];
+    // 백엔드 에러 처리
+    if (parsed.error) {
+      return NextResponse.json(
+        { error: parsed.error, code: 'BACKEND_ERROR' } as TarotError,
+        { status: 400 }
+      );
     }
 
     const response: TarotResponse = {
-      cards: data[0] || '',
-      interpretation: data[1] || '',
-      cardData,
+      cards: parsed.cards,
+      interpretation: parsed.interpretation,
     };
 
     return NextResponse.json(response);

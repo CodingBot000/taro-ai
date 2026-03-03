@@ -21,9 +21,26 @@ const translations = {
     // 입력 폼
     questionPlaceholder: '궁금한 것을 물어보세요... (예: 이직해야 할까요?)',
     submitButton: '카드 뽑기',
+    selectCardButton: '카드 선택하기',
     submitting: '카드를 섞고 있어요...',
 
-    // 로딩 상태
+    // 카드 선택 화면
+    selectCards: '카드를 선택하세요',
+    selectCardGuide_one: '마음이 끌리는 카드 한 장을 선택하세요',
+    selectCardGuide_three: '첫 번째 = 과거, 두 번째 = 현재, 세 번째 = 미래',
+    shuffleButton: '셔플',
+    interpretButton: '해석하기',
+
+    // 에너지 애니메이션
+    energyTitle: '에너지를 집중하고 있어요',
+    energyMessages: [
+      '깊은 해석을 준비하고 있습니다...',
+      '카드의 메시지를 읽고 있습니다...',
+      '우주의 기운이 모이고 있어요...',
+      '별빛이 카드에 스며들고 있어요...',
+    ],
+
+    // 로딩 상태 (레거시 - 호환용)
     loadingTitle: '카드를 읽고 있어요',
     loadingMessages: [
       '카드를 섞고 있어요...',
@@ -63,7 +80,22 @@ const translations = {
 
     questionPlaceholder: 'Ask your question... (e.g., Should I change jobs?)',
     submitButton: 'Draw Cards',
+    selectCardButton: 'Select Cards',
     submitting: 'Shuffling the cards...',
+
+    selectCards: 'Select your cards',
+    selectCardGuide_one: 'Choose one card that speaks to you',
+    selectCardGuide_three: '1st = Past, 2nd = Present, 3rd = Future',
+    shuffleButton: 'Shuffle',
+    interpretButton: 'Interpret',
+
+    energyTitle: 'Concentrating energy',
+    energyMessages: [
+      'Preparing a deep reading...',
+      'Reading the card messages...',
+      'Gathering cosmic energy...',
+      'Starlight is flowing into the cards...',
+    ],
 
     loadingTitle: 'Starlight is reading your cards',
     loadingMessages: [

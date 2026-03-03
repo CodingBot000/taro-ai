@@ -4,27 +4,43 @@ import { useState } from 'react';
 import Starfield from '@/components/Starfield';
 import Header from '@/components/Header';
 import ReadingForm from '@/components/ReadingForm';
-import LoadingOverlay from '@/components/LoadingOverlay';
+import CardSelectionScreen from '@/components/CardSelectionScreen';
+import EnergyAnimation from '@/components/EnergyAnimation';
 import ReadingResult from '@/components/ReadingResult';
 import ErrorDisplay from '@/components/ErrorDisplay';
-import type { ReadingType, TarotResponse, TarotError } from '@/types';
+import type { ReadingType, TarotResponse, TarotError, SelectedCardPayload } from '@/types';
 
-type AppState = 'idle' | 'loading' | 'result' | 'error';
+type AppState = 'idle' | 'selecting' | 'loading' | 'result' | 'error';
 
 export default function Home() {
   const [appState, setAppState] = useState<AppState>('idle');
+  const [question, setQuestion] = useState('');
+  const [readingType, setReadingType] = useState<ReadingType>('one-card');
+  const [selectedCards, setSelectedCards] = useState<SelectedCardPayload[]>([]);
   const [result, setResult] = useState<TarotResponse | null>(null);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState('');
 
-  const handleSubmit = async (question: string, readingType: ReadingType) => {
+  // 1단계 → 2단계: 질문 입력 후 카드 선택 화면으로
+  const handleQuestionSubmit = (q: string, rt: ReadingType) => {
+    setQuestion(q);
+    setReadingType(rt);
+    setAppState('selecting');
+  };
+
+  // 2단계 → 3단계: 카드 선택 확인 → API 호출
+  const handleCardConfirm = async (cards: SelectedCardPayload[]) => {
+    setSelectedCards(cards);
     setAppState('loading');
-    setError('');
 
     try {
       const response = await fetch('/api/tarot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, readingType }),
+        body: JSON.stringify({
+          question,
+          readingType,
+          selectedCardsJson: JSON.stringify(cards),
+        }),
       });
 
       if (!response.ok) {
@@ -44,8 +60,16 @@ export default function Home() {
     }
   };
 
+  // 카드 선택 → 질문 입력으로 돌아가기
+  const handleBack = () => {
+    setAppState('idle');
+  };
+
+  // 전체 초기화
   const handleReset = () => {
     setAppState('idle');
+    setQuestion('');
+    setSelectedCards([]);
     setResult(null);
     setError('');
   };
@@ -60,26 +84,30 @@ export default function Home() {
 
       {/* 메인 콘텐츠 영역 */}
       <div className="relative z-10 pb-12">
-        {/* 입력 폼 */}
+        {/* 1단계: 질문 입력 */}
         {appState === 'idle' && (
           <div className="animate-fade-in">
-            <ReadingForm onSubmit={handleSubmit} isLoading={false} />
+            <ReadingForm onSubmit={handleQuestionSubmit} isLoading={false} />
           </div>
         )}
 
-        {/* 로딩 상태 */}
-        {appState === 'loading' && (
+        {/* 2단계: 카드 선택 */}
+        {appState === 'selecting' && (
           <div className="animate-fade-in">
-            <ReadingForm onSubmit={handleSubmit} isLoading={true} />
+            <CardSelectionScreen
+              readingType={readingType}
+              onConfirm={handleCardConfirm}
+              onBack={handleBack}
+            />
           </div>
         )}
 
-        {/* 결과 */}
+        {/* 4단계: 결과 */}
         {appState === 'result' && result && (
           <ReadingResult
             cards={result.cards}
-            cardData={result.cardData}
             interpretation={result.interpretation}
+            question={question}
             onReset={handleReset}
           />
         )}
@@ -90,8 +118,12 @@ export default function Home() {
         )}
       </div>
 
-      {/* 로딩 오버레이 (전체화면) */}
-      <LoadingOverlay isVisible={appState === 'loading'} />
+      {/* 3단계: 에너지 애니메이션 (전체화면 오버레이) */}
+      <EnergyAnimation
+        selectedCards={selectedCards}
+        readingType={readingType}
+        isVisible={appState === 'loading'}
+      />
 
       {/* 푸터 */}
       <footer className="relative z-10 text-center pb-6 px-4">

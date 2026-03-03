@@ -5,9 +5,9 @@ import type { CardData } from '@/types';
 import TarotCard from './TarotCard';
 
 interface ReadingResultProps {
-  cards: string;
-  cardData: CardData[];
+  cards: CardData[];
   interpretation: string;
+  question: string;
   onReset: () => void;
   locale?: Locale;
 }
@@ -16,13 +16,13 @@ const POSITION_LABELS = ['과거', '현재', '미래'];
 
 export default function ReadingResult({
   cards,
-  cardData,
   interpretation,
+  question,
   onReset,
   locale = 'ko',
 }: ReadingResultProps) {
   const t = getTranslations(locale);
-  const isThreeCard = cardData.length === 3;
+  const isThreeCard = cards.length === 3;
 
   return (
     <div className="relative z-10 max-w-2xl mx-auto px-4 animate-fade-in">
@@ -33,7 +33,7 @@ export default function ReadingResult({
         </h2>
 
         <div className="flex justify-center items-end gap-4 sm:gap-6 mb-4 flex-wrap">
-          {cardData.map((card, index) => (
+          {cards.map((card, index) => (
             <div key={card.id} className="flex flex-col items-center animate-slide-up"
               style={{ animationDelay: `${index * 300}ms` }}
             >
@@ -49,7 +49,7 @@ export default function ReadingResult({
                 cardName={card.name}
                 isReversed={card.direction === '역방향'}
                 flipDelay={500 + index * 600}
-                size={cardData.length === 1 ? 'lg' : 'md'}
+                size={cards.length === 1 ? 'lg' : 'md'}
               />
 
               {/* 카드 이름 */}
@@ -68,6 +68,13 @@ export default function ReadingResult({
 
       <div className="golden-divider max-w-sm mx-auto" />
 
+      {/* 사용자 질문 */}
+      <div className="text-center mt-6 mb-2">
+        <p className="text-sm text-[var(--color-text-secondary)] font-body italic">
+          &ldquo;{question}&rdquo;
+        </p>
+      </div>
+
       {/* 해석 섹션 */}
       <div className="mt-8 mb-8">
         <h2 className="font-heading text-lg text-gold-400 text-center mb-6 tracking-wider">
@@ -75,14 +82,6 @@ export default function ReadingResult({
         </h2>
 
         <div className="glass-panel p-6 sm:p-8">
-          {/* 원본 카드 정보 */}
-          <div className="text-sm text-[var(--color-text-muted)] mb-4 p-3 rounded-lg bg-[var(--color-bg-primary)]/50 font-body whitespace-pre-wrap">
-            {cards}
-          </div>
-
-          <div className="golden-divider max-w-xs mx-auto" />
-
-          {/* AI 해석 */}
           <div className="font-body text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
             {interpretation}
           </div>

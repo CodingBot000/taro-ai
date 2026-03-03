@@ -95,21 +95,14 @@ export default function ReadingForm({ onSubmit, isLoading, locale = 'ko' }: Read
       <div className="text-center">
         <button
           type="submit"
-          disabled={!question.trim() || isLoading}
+          disabled={!question.trim()}
           className="glow-button font-body"
         >
-          {isLoading ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              {t.submitting}
-            </span>
-          ) : (
-            <span className="flex items-center justify-center gap-2">
-              <span>✦</span>
-              {t.submitButton}
-              <span>✦</span>
-            </span>
-          )}
+          <span className="flex items-center justify-center gap-2">
+            <span>✦</span>
+            {t.selectCardButton}
+            <span>✦</span>
+          </span>
         </button>
       </div>
     </form>

@@ -28,8 +28,8 @@ export function validateQuestion(question: string): {
     return { isValid: false, errorMessage: "질문을 문장으로 입력해주세요." };
   }
 
-  // 특수문자·숫자만
-  if (/^[\W\d_]+$/u.test(text)) {
+  // 특수문자·숫자만 (한글 또는 영문이 하나도 없는 경우)
+  if (!/[가-힣a-zA-Z]/.test(text)) {
     return {
       isValid: false,
       errorMessage: "질문을 한국어 문장 형태로 입력해주세요.",
