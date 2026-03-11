@@ -1,3 +1,5 @@
+import type { MainCategoryId, SubCategoryId } from '@/lib/questionCategories';
+
 export type ReadingType = 'one-card' | 'three-card';
 
 // Gradio API에 보내는 reading_type 값 매핑
@@ -20,6 +22,16 @@ export interface SelectedCardPayload {
   direction: '정방향' | '역방향';
 }
 
+export interface CategorySelection {
+  mainCategoryId: MainCategoryId;
+  subCategoryId: SubCategoryId;
+}
+
+export interface UiContextPayload {
+  locale: string;
+  categoryVersion: string;
+}
+
 // 서버 응답의 카드 데이터
 export interface CardData {
   id: string;
@@ -31,14 +43,21 @@ export interface TarotRequest {
   question: string;
   readingType: ReadingType;
   selectedCardsJson: string;
+  categorySelection: CategorySelection;
+  uiContext: UiContextPayload;
 }
 
 export interface TarotResponse {
   cards: CardData[];
   interpretation: string;
+  backendVersion?: string;
 }
 
 export interface TarotError {
   error: string;
   code?: string;
+}
+
+export interface BackendVersionResponse {
+  version: string;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Starfield from '@/components/Starfield';
 import Header from '@/components/Header';
 import ReadingForm from '@/components/ReadingForm';
@@ -8,39 +8,96 @@ import CardSelectionScreen from '@/components/CardSelectionScreen';
 import EnergyAnimation from '@/components/EnergyAnimation';
 import ReadingResult from '@/components/ReadingResult';
 import ErrorDisplay from '@/components/ErrorDisplay';
-import type { ReadingType, TarotResponse, TarotError, SelectedCardPayload } from '@/types';
+import { getTranslations } from '@/lib/i18n';
+import { QUESTION_CATEGORY_VERSION } from '@/lib/questionCategories';
+import type {
+  BackendVersionResponse,
+  CategorySelection,
+  ReadingType,
+  SelectedCardPayload,
+  TarotError,
+  TarotRequest,
+  TarotResponse,
+} from '@/types';
 
 type AppState = 'idle' | 'selecting' | 'loading' | 'result' | 'error';
 
 export default function Home() {
+  const t = getTranslations('ko');
   const [appState, setAppState] = useState<AppState>('idle');
   const [question, setQuestion] = useState('');
   const [readingType, setReadingType] = useState<ReadingType>('one-card');
+  const [categorySelection, setCategorySelection] = useState<CategorySelection | null>(null);
   const [selectedCards, setSelectedCards] = useState<SelectedCardPayload[]>([]);
   const [result, setResult] = useState<TarotResponse | null>(null);
   const [error, setError] = useState('');
+  const [backendVersion, setBackendVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadBackendVersion = async () => {
+      try {
+        const response = await fetch('/api/version');
+        if (!response.ok) {
+          return;
+        }
+
+        const data: BackendVersionResponse = await response.json();
+        if (isMounted && data.version) {
+          setBackendVersion(data.version);
+        }
+      } catch (versionError) {
+        console.error('Version fetch error:', versionError);
+      }
+    };
+
+    void loadBackendVersion();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // 1단계 → 2단계: 질문 입력 후 카드 선택 화면으로
-  const handleQuestionSubmit = (q: string, rt: ReadingType) => {
+  const handleQuestionSubmit = (
+    q: string,
+    rt: ReadingType,
+    nextCategorySelection: CategorySelection
+  ) => {
     setQuestion(q);
     setReadingType(rt);
+    setCategorySelection(nextCategorySelection);
     setAppState('selecting');
   };
 
   // 2단계 → 3단계: 카드 선택 확인 → API 호출
   const handleCardConfirm = async (cards: SelectedCardPayload[]) => {
+    if (!categorySelection) {
+      setError('질문 카테고리를 다시 선택해주세요.');
+      setAppState('error');
+      return;
+    }
+
     setSelectedCards(cards);
     setAppState('loading');
 
     try {
+      const requestBody: TarotRequest = {
+        question,
+        readingType,
+        selectedCardsJson: JSON.stringify(cards),
+        categorySelection,
+        uiContext: {
+          locale: 'ko',
+          categoryVersion: QUESTION_CATEGORY_VERSION,
+        },
+      };
+
       const response = await fetch('/api/tarot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question,
-          readingType,
-          selectedCardsJson: JSON.stringify(cards),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -51,6 +108,9 @@ export default function Home() {
       }
 
       const data: TarotResponse = await response.json();
+      if (data.backendVersion) {
+        setBackendVersion(data.backendVersion);
+      }
       setResult(data);
       setAppState('result');
     } catch (err: any) {
@@ -69,6 +129,7 @@ export default function Home() {
   const handleReset = () => {
     setAppState('idle');
     setQuestion('');
+    setCategorySelection(null);
     setSelectedCards([]);
     setResult(null);
     setError('');
@@ -128,8 +189,8 @@ export default function Home() {
       {/* 푸터 */}
       <footer className="relative z-10 text-center pb-6 px-4">
         <p className="text-xs text-[var(--color-text-muted)] font-body max-w-md mx-auto">
-          본 타로는 AI 기반 엔터테인먼트 서비스입니다.
-          중요한 결정에 대해서는 전문가와 상담하세요.
+          {t.footerText}
+          {backendVersion ? ` · version ${backendVersion}` : ''}
         </p>
       </footer>
     </main>

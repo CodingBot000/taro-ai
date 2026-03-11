@@ -12,11 +12,19 @@ const translations = {
     siteSubtitle: 'AI가 읽어주는 당신의 별자리',
 
     // 리딩 타입
-    readingTypeLabel: '리딩 방식을 선택하세요',
+    readingTypeLabel: '리딩 방식 선택',
     oneCard: '원카드',
     oneCardDesc: '오늘의 운세',
     threeCard: '쓰리카드',
     threeCardDesc: '과거 / 현재 / 미래',
+
+    // 카테고리 선택
+    mainCategoryLabel: '질문 카테고리 선택',
+    subCategoryLabel: '상황을 더 구체적으로 골라주세요',
+    questionInputLabel: '질문 입력',
+    questionInputHelpText: '상황을 한두 문장으로 적으면 해석이 더 정확해집니다.',
+    subCategoryHint: '세부 상황을 고르면 질문 예시가 바뀝니다.',
+    unknownSubCategoryHint: '괜찮아요. 가장 고민되는 상황을 그대로 적어주세요.',
 
     // 입력 폼
     questionPlaceholder: '궁금한 것을 물어보세요... (예: 이직해야 할까요?)',
@@ -30,15 +38,6 @@ const translations = {
     selectCardGuide_three: '첫 번째 = 과거, 두 번째 = 현재, 세 번째 = 미래',
     shuffleButton: '셔플',
     interpretButton: '해석하기',
-
-    // 에너지 애니메이션
-    energyTitle: '에너지를 집중하고 있어요',
-    energyMessages: [
-      '깊은 해석을 준비하고 있습니다...',
-      '카드의 메시지를 읽고 있습니다...',
-      '우주의 기운이 모이고 있어요...',
-      '별빛이 카드에 스며들고 있어요...',
-    ],
 
     // 로딩 상태 (레거시 - 호환용)
     loadingTitle: '카드를 읽고 있어요',
@@ -78,6 +77,13 @@ const translations = {
     threeCard: 'Three Cards',
     threeCardDesc: 'Past / Present / Future',
 
+    mainCategoryLabel: 'Choose a question category',
+    subCategoryLabel: 'Choose the situation in more detail',
+    questionInputLabel: 'Enter your question',
+    questionInputHelpText: 'A short description of your situation helps the reading stay precise.',
+    subCategoryHint: 'Pick a detailed situation to change the example question.',
+    unknownSubCategoryHint: 'That is fine. Write the situation that feels most important to you.',
+
     questionPlaceholder: 'Ask your question... (e.g., Should I change jobs?)',
     submitButton: 'Draw Cards',
     selectCardButton: 'Select Cards',
@@ -88,14 +94,6 @@ const translations = {
     selectCardGuide_three: '1st = Past, 2nd = Present, 3rd = Future',
     shuffleButton: 'Shuffle',
     interpretButton: 'Interpret',
-
-    energyTitle: 'Concentrating energy',
-    energyMessages: [
-      'Preparing a deep reading...',
-      'Reading the card messages...',
-      'Gathering cosmic energy...',
-      'Starlight is flowing into the cards...',
-    ],
 
     loadingTitle: 'Starlight is reading your cards',
     loadingMessages: [

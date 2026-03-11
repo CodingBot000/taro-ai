@@ -39,12 +39,16 @@ export default function EnergyAnimation({
     return () => clearInterval(timer);
   }, [isVisible]);
 
-  // 메시지 순환 (5초 이후, 5초마다)
+  // 메시지 순환 (5초마다)
   useEffect(() => {
-    if (elapsed < 5) return;
-    const idx = Math.floor((elapsed - 5) / 5) % t.energyMessages.length;
+    if (elapsed === 0) {
+      setMessageIndex(0);
+      return;
+    }
+
+    const idx = Math.floor(elapsed / 5) % t.loadingMessages.length;
     setMessageIndex(idx);
-  }, [elapsed, t.energyMessages.length]);
+  }, [elapsed, t.loadingMessages.length]);
 
   if (!isVisible) return null;
 
@@ -52,13 +56,18 @@ export default function EnergyAnimation({
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[var(--color-bg-primary)]/95 backdrop-blur-sm">
-      {/* 에너지 타이틀 */}
-      <h2 className="font-heading text-lg text-gold-400 tracking-wider mb-8 animate-pulse">
-        {t.energyTitle}
-      </h2>
+      <div className="w-full max-w-xl px-6 text-center">
+        <h2 className="font-heading text-lg text-gold-400 tracking-wider animate-pulse">
+          {t.loadingTitle}
+        </h2>
+
+        <p className="mt-3 h-6 text-[var(--color-text-secondary)] font-body transition-opacity duration-500">
+          {t.loadingMessages[messageIndex]}
+        </p>
+      </div>
 
       {/* 선택 카드 표시 (뒷면) */}
-      <div className={`flex items-center justify-center gap-4 ${isThreeCard ? 'gap-3' : ''}`}>
+      <div className={`mt-8 flex items-center justify-center gap-4 ${isThreeCard ? 'gap-3' : ''}`}>
         {selectedCards.map((card, index) => (
           <div key={card.id} className="flex flex-col items-center">
             {/* 포지션 라벨 (쓰리카드) */}
@@ -88,26 +97,18 @@ export default function EnergyAnimation({
         ))}
       </div>
 
-      {/* 보조 메시지 (12초 이후) */}
-      <div className="mt-10 h-8">
-        {elapsed >= 12 && (
-          <p className="text-sm text-[var(--color-text-muted)] font-body animate-fade-in">
-            {t.energyMessages[messageIndex]}
-          </p>
-        )}
-      </div>
+      <div className="mt-10 w-full max-w-sm px-6">
+        <div className="h-1 w-full overflow-hidden rounded-full bg-[var(--color-border)]">
+          <div className="h-full rounded-full loading-shimmer" />
+        </div>
 
-      {/* 경과 시간 */}
-      <div className="mt-4 text-xs text-[var(--color-text-muted)]/50">
-        {elapsed > 0 && `${elapsed}초`}
+        <div className="mt-4 text-center text-xs text-[var(--color-text-muted)] space-y-1">
+          <p>{elapsed}초 경과</p>
+          {elapsed >= 10 && (
+            <p className="animate-fade-in">{t.loadingNote}</p>
+          )}
+        </div>
       </div>
-
-      {/* 첫 요청 안내 */}
-      {elapsed >= 10 && (
-        <p className="mt-2 text-xs text-[var(--color-text-muted)] font-body animate-fade-in">
-          {t.loadingNote}
-        </p>
-      )}
     </div>
   );
 }

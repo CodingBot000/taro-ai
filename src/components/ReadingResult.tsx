@@ -57,9 +57,14 @@ export default function ReadingResult({
                 <div className="text-sm font-heading text-[var(--color-text-primary)]">
                   {card.name}
                 </div>
-                {card.direction === '역방향' && (
-                  <div className="text-xs text-red-400/70 mt-0.5">역방향</div>
-                )}
+                <div
+                  className={`text-xs mt-0.5 ${
+                    card.direction === '역방향' ? 'text-red-400/70' : 'invisible'
+                  }`}
+                  aria-hidden={card.direction !== '역방향'}
+                >
+                  역방향
+                </div>
               </div>
             </div>
           ))}

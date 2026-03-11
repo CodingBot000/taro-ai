@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Client } from '@gradio/client';
-import { READING_TYPE_MAP, type ReadingType, type TarotResponse, type TarotError } from '@/types';
+import {
+  findMainCategory,
+  isValidCategorySelection,
+  type MainCategoryId,
+  type SubCategoryId,
+} from '@/lib/questionCategories';
+import {
+  READING_TYPE_MAP,
+  type CategorySelection,
+  type ReadingType,
+  type TarotError,
+  type TarotRequest,
+  type TarotResponse,
+  type UiContextPayload,
+} from '@/types';
 
 // Vercel Serverless Function 타임아웃 설정 (Pro: 300초, Hobby: 60초)
 // ZeroGPU cold start + 생성 시간 고려
@@ -23,6 +37,39 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
+function isValidUiContext(uiContext: UiContextPayload | undefined): uiContext is UiContextPayload {
+  return Boolean(
+    uiContext &&
+      typeof uiContext.locale === 'string' &&
+      uiContext.locale.trim() &&
+      typeof uiContext.categoryVersion === 'string' &&
+      uiContext.categoryVersion.trim()
+  );
+}
+
+function isValidCategorySelectionPayload(
+  categorySelection: CategorySelection | undefined
+): categorySelection is CategorySelection {
+  if (!categorySelection) {
+    return false;
+  }
+
+  const { mainCategoryId, subCategoryId } = categorySelection as {
+    mainCategoryId?: MainCategoryId;
+    subCategoryId?: SubCategoryId;
+  };
+
+  if (!mainCategoryId || !subCategoryId) {
+    return false;
+  }
+
+  return isValidCategorySelection(mainCategoryId, subCategoryId);
+}
+
+function getExpectedCardCount(readingType: ReadingType) {
+  return readingType === 'one-card' ? 1 : 3;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
@@ -36,11 +83,13 @@ export async function POST(request: NextRequest) {
 
     // 요청 파싱
     const body = await request.json();
-    const { question, readingType, selectedCardsJson } = body as {
-      question: string;
-      readingType: ReadingType;
-      selectedCardsJson: string;
-    };
+    const {
+      question,
+      readingType,
+      selectedCardsJson,
+      categorySelection,
+      uiContext,
+    } = body as Partial<TarotRequest>;
 
     // 입력 유효성 검사
     if (!question || typeof question !== 'string' || question.trim().length === 0) {
@@ -71,6 +120,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!isValidCategorySelectionPayload(categorySelection)) {
+      return NextResponse.json(
+        { error: '질문 카테고리 선택이 올바르지 않습니다.', code: 'INVALID_CATEGORY_SELECTION' } as TarotError,
+        { status: 400 }
+      );
+    }
+
+    if (!findMainCategory(categorySelection.mainCategoryId)) {
+      return NextResponse.json(
+        { error: '지원하지 않는 질문 카테고리입니다.', code: 'INVALID_MAIN_CATEGORY' } as TarotError,
+        { status: 400 }
+      );
+    }
+
+    if (!isValidUiContext(uiContext)) {
+      return NextResponse.json(
+        { error: 'UI 컨텍스트 정보가 올바르지 않습니다.', code: 'INVALID_UI_CONTEXT' } as TarotError,
+        { status: 400 }
+      );
+    }
+
+    let parsedCards: unknown;
+
+    try {
+      parsedCards = JSON.parse(selectedCardsJson);
+    } catch {
+      return NextResponse.json(
+        { error: '카드 데이터가 올바른 JSON 형식이 아닙니다.', code: 'INVALID_CARDS_JSON' } as TarotError,
+        { status: 400 }
+      );
+    }
+
+    if (!Array.isArray(parsedCards) || parsedCards.length !== getExpectedCardCount(readingType)) {
+      return NextResponse.json(
+        { error: '리딩 타입과 카드 수가 일치하지 않습니다.', code: 'CARD_COUNT_MISMATCH' } as TarotError,
+        { status: 400 }
+      );
+    }
+
     // HuggingFace 토큰 확인
     const hfToken = process.env.HF_TOKEN;
     if (!hfToken) {
@@ -91,6 +179,8 @@ export async function POST(request: NextRequest) {
       question: question.trim(),
       reading_type: READING_TYPE_MAP[readingType],
       selected_cards_json: selectedCardsJson,
+      category_selection_json: JSON.stringify(categorySelection),
+      ui_context_json: JSON.stringify(uiContext),
     });
 
     // 백엔드가 단일 JSON 문자열을 반환
@@ -108,6 +198,7 @@ export async function POST(request: NextRequest) {
     const response: TarotResponse = {
       cards: parsed.cards,
       interpretation: parsed.interpretation,
+      backendVersion: parsed.backend_version,
     };
 
     return NextResponse.json(response);
