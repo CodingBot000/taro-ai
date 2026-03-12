@@ -8,6 +8,7 @@ import CardSelectionScreen from '@/components/CardSelectionScreen';
 import EnergyAnimation from '@/components/EnergyAnimation';
 import ReadingResult from '@/components/ReadingResult';
 import ErrorDisplay from '@/components/ErrorDisplay';
+import { buildApiUrl } from '@/lib/api';
 import { getTranslations } from '@/lib/i18n';
 import { QUESTION_CATEGORY_VERSION } from '@/lib/questionCategories';
 import type {
@@ -38,7 +39,7 @@ export default function Home() {
 
     const loadBackendVersion = async () => {
       try {
-        const response = await fetch('/api/version');
+        const response = await fetch(buildApiUrl('/api/version'));
         if (!response.ok) {
           return;
         }
@@ -94,7 +95,7 @@ export default function Home() {
         },
       };
 
-      const response = await fetch('/api/tarot', {
+      const response = await fetch(buildApiUrl('/api/tarot'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
