@@ -61,3 +61,21 @@ export interface TarotError {
 export interface BackendVersionResponse {
   version: string;
 }
+
+export interface AccessTokenResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresAt: string;
+}
+
+export interface AuthUser {
+  id: number;
+  email: string | null;
+  name: string;
+  profileImageUrl: string | null;
+  role: string;
+  status: string;
+  lastLoginAt: string | null;
+}
+
+export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';

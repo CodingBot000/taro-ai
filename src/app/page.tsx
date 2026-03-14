@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import AuthLoadingPanel from '@/components/auth/AuthLoadingPanel';
+import AuthRequiredPanel from '@/components/auth/AuthRequiredPanel';
 import Starfield from '@/components/Starfield';
 import Header from '@/components/Header';
 import ReadingForm from '@/components/ReadingForm';
@@ -11,6 +13,7 @@ import ErrorDisplay from '@/components/ErrorDisplay';
 import { buildApiUrl } from '@/lib/api';
 import { getTranslations } from '@/lib/i18n';
 import { QUESTION_CATEGORY_VERSION } from '@/lib/questionCategories';
+import { useAuth } from '@/providers/AuthProvider';
 import type {
   BackendVersionResponse,
   CategorySelection,
@@ -25,6 +28,7 @@ type AppState = 'idle' | 'selecting' | 'loading' | 'result' | 'error';
 
 export default function Home() {
   const t = getTranslations('ko');
+  const auth = useAuth();
   const [appState, setAppState] = useState<AppState>('idle');
   const [question, setQuestion] = useState('');
   const [readingType, setReadingType] = useState<ReadingType>('one-card');
@@ -35,11 +39,22 @@ export default function Home() {
   const [backendVersion, setBackendVersion] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!auth.isAuthenticated || !auth.accessToken) {
+      setBackendVersion(null);
+      return;
+    }
+
     let isMounted = true;
 
     const loadBackendVersion = async () => {
       try {
-        const response = await fetch(buildApiUrl('/api/version'));
+        const response = await fetch(buildApiUrl('/api/version'), {
+          headers: {
+            Authorization: `Bearer ${auth.accessToken}`,
+          },
+          credentials: 'include',
+          cache: 'no-store',
+        });
         if (!response.ok) {
           return;
         }
@@ -48,8 +63,10 @@ export default function Home() {
         if (isMounted && data.version) {
           setBackendVersion(data.version);
         }
-      } catch (versionError) {
-        console.error('Version fetch error:', versionError);
+      } catch {
+        if (isMounted) {
+          setBackendVersion(null);
+        }
       }
     };
 
@@ -58,7 +75,13 @@ export default function Home() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [auth.accessToken, auth.isAuthenticated]);
+
+  useEffect(() => {
+    if (auth.status === 'unauthenticated' && appState !== 'idle') {
+      handleReset();
+    }
+  }, [appState, auth.status]);
 
   // 1단계 → 2단계: 질문 입력 후 카드 선택 화면으로
   const handleQuestionSubmit = (
@@ -80,6 +103,12 @@ export default function Home() {
       return;
     }
 
+    if (!auth.isAuthenticated) {
+      setError('로그인 후 타로 리딩을 이용할 수 있습니다.');
+      setAppState('error');
+      return;
+    }
+
     setSelectedCards(cards);
     setAppState('loading');
 
@@ -95,7 +124,7 @@ export default function Home() {
         },
       };
 
-      const response = await fetch(buildApiUrl('/api/tarot'), {
+      const response = await auth.fetchWithAuth('/api/tarot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -114,9 +143,8 @@ export default function Home() {
       }
       setResult(data);
       setAppState('result');
-    } catch (err: any) {
-      console.error('Reading error:', err);
-      setError(err.message || '예상치 못한 오류가 발생했습니다.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '예상치 못한 오류가 발생했습니다.');
       setAppState('error');
     }
   };
@@ -149,7 +177,13 @@ export default function Home() {
         {/* 1단계: 질문 입력 */}
         {appState === 'idle' && (
           <div className="animate-fade-in">
-            <ReadingForm onSubmit={handleQuestionSubmit} isLoading={false} />
+            {auth.status === 'loading' ? (
+              <AuthLoadingPanel />
+            ) : auth.isAuthenticated ? (
+              <ReadingForm onSubmit={handleQuestionSubmit} isLoading={false} />
+            ) : (
+              <AuthRequiredPanel />
+            )}
           </div>
         )}
 
