@@ -21,6 +21,8 @@ import {
 } from '@/lib/auth';
 import type { AuthStatus, AuthUser } from '@/types';
 
+const AUTH_SESSION_HINT_STORAGE_KEY = 'auth_session_hint';
+
 interface AuthContextValue {
   accessToken: string | null;
   errorMessage: string;
@@ -81,12 +83,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
         }
+
+        if (!hasAuthSessionHint()) {
+          clearAuthState();
+          setStatus('unauthenticated');
+          return;
+        }
       }
 
       const token = await refreshSession(true);
       if (!active || token) {
         return;
       }
+
       clearAuthState();
       setStatus('unauthenticated');
     };
@@ -99,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setAuthenticatedState = (nextAccessToken: string, nextUser: AuthUser) => {
+    persistAuthSessionHint();
     accessTokenRef.current = nextAccessToken;
     setAccessToken(nextAccessToken);
     setUser(nextUser);
@@ -107,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const clearAuthState = () => {
+    clearAuthSessionHint();
     accessTokenRef.current = null;
     setAccessToken(null);
     setUser(null);
@@ -217,4 +228,28 @@ export function useAuth() {
     throw new Error('useAuth must be used within AuthProvider');
   }
   return context;
+}
+
+function hasAuthSessionHint() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return window.localStorage.getItem(AUTH_SESSION_HINT_STORAGE_KEY) === '1';
+}
+
+function persistAuthSessionHint() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(AUTH_SESSION_HINT_STORAGE_KEY, '1');
+}
+
+function clearAuthSessionHint() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.removeItem(AUTH_SESSION_HINT_STORAGE_KEY);
 }
