@@ -30,7 +30,7 @@ const translations = {
     questionPlaceholder: '궁금한 것을 물어보세요... (예: 이직해야 할까요?)',
     submitButton: '카드 뽑기',
     selectCardButton: '카드 선택하기',
-    submitting: '카드를 섞고 있어요...',
+    submitting: '뽑은 카드에 집중해주세요...',
 
     // 카드 선택 화면
     selectCards: '카드를 선택하세요',
@@ -42,7 +42,7 @@ const translations = {
     // 로딩 상태 (레거시 - 호환용)
     loadingTitle: '카드를 읽고 있어요',
     loadingMessages: [
-      '카드를 섞고 있어요...',
+      '뽑은 카드에 집중해주세요...',
       '별자리의 기운을 모으고 있어요...',
       '당신의 에너지를 읽고 있어요...',
       '카드가 메시지를 전하려 해요...',
@@ -87,7 +87,7 @@ const translations = {
     questionPlaceholder: 'Ask your question... (e.g., Should I change jobs?)',
     submitButton: 'Draw Cards',
     selectCardButton: 'Select Cards',
-    submitting: 'Shuffling the cards...',
+    submitting: 'Please concentrate on the cards you have drawn...',
 
     selectCards: 'Select your cards',
     selectCardGuide_one: 'Choose one card that speaks to you',
@@ -97,7 +97,7 @@ const translations = {
 
     loadingTitle: 'Starlight is reading your cards',
     loadingMessages: [
-      'Shuffling the cards...',
+      'Please concentrate on the cards you have drawn...',
       'Gathering celestial energy...',
       'Reading your aura...',
       'The cards have a message...',
