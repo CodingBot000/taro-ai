@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { getTranslations, type Locale } from '@/lib/i18n';
 import {
-  QUESTION_CATEGORIES,
   findMainCategory,
   getDefaultSubCategoryForMain,
   getPlaceholderForSelection,
+  type MainCategoryConfig,
   type MainCategoryId,
   type SubCategoryId,
 } from '@/lib/questionCategories';
@@ -14,6 +14,7 @@ import { validateQuestion } from '@/utils/validateQuestion';
 import type { CategorySelection, ReadingType } from '@/types';
 
 interface ReadingFormProps {
+  categories: MainCategoryConfig[];
   onSubmit: (
     question: string,
     readingType: ReadingType,
@@ -23,7 +24,7 @@ interface ReadingFormProps {
   locale?: Locale;
 }
 
-export default function ReadingForm({ onSubmit, isLoading, locale = 'ko' }: ReadingFormProps) {
+export default function ReadingForm({ categories, onSubmit, isLoading, locale = 'ko' }: ReadingFormProps) {
   const t = getTranslations(locale);
   const [question, setQuestion] = useState('');
   const [readingType, setReadingType] = useState<ReadingType>('one-card');
@@ -31,8 +32,8 @@ export default function ReadingForm({ onSubmit, isLoading, locale = 'ko' }: Read
   const [subCategoryId, setSubCategoryId] = useState<SubCategoryId | null>(null);
   const [validationError, setValidationError] = useState('');
 
-  const activeMainCategory = mainCategoryId ? findMainCategory(mainCategoryId) : null;
-  const placeholder = getPlaceholderForSelection(mainCategoryId, subCategoryId) || t.questionPlaceholder;
+  const activeMainCategory = findMainCategory(categories, mainCategoryId);
+  const placeholder = getPlaceholderForSelection(categories, mainCategoryId, subCategoryId) || t.questionPlaceholder;
 
   const subCategoryHelpMessage =
     subCategoryId === 'unknown'
@@ -40,7 +41,7 @@ export default function ReadingForm({ onSubmit, isLoading, locale = 'ko' }: Read
       : t.subCategoryHint;
 
   const handleMainCategorySelect = (nextMainCategoryId: MainCategoryId) => {
-    const defaultSubCategory = getDefaultSubCategoryForMain(nextMainCategoryId);
+    const defaultSubCategory = getDefaultSubCategoryForMain(categories, nextMainCategoryId);
     setMainCategoryId(nextMainCategoryId);
     setSubCategoryId(defaultSubCategory?.id ?? null);
     setValidationError('');
@@ -123,7 +124,7 @@ export default function ReadingForm({ onSubmit, isLoading, locale = 'ko' }: Read
         </label>
 
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-          {QUESTION_CATEGORIES.map((category) => {
+          {categories.map((category) => {
             const isActive = category.id === mainCategoryId;
 
             return (
