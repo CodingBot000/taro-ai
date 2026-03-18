@@ -10,7 +10,12 @@ import ReadingResult from '@/components/ReadingResult';
 import ErrorDisplay from '@/components/ErrorDisplay';
 import { buildApiUrl } from '@/lib/api';
 import { getTranslations } from '@/lib/i18n';
-import { QUESTION_CATEGORY_VERSION } from '@/lib/questionCategories';
+import type { QuestionCategoryManifest } from '@/lib/questionCategories';
+import {
+  fetchQuestionCategoryManifest,
+  readCachedQuestionCategoryManifest,
+  writeCachedQuestionCategoryManifest,
+} from '@/lib/questionCategoryManifest';
 import { useAuth } from '@/providers/AuthProvider';
 import type {
   BackendVersionResponse,
@@ -35,6 +40,10 @@ export default function Home() {
   const [result, setResult] = useState<TarotResponse | null>(null);
   const [error, setError] = useState('');
   const [backendVersion, setBackendVersion] = useState<string | null>(null);
+  const [questionCategoryManifest, setQuestionCategoryManifest] = useState<QuestionCategoryManifest | null>(null);
+  const [questionCategoryError, setQuestionCategoryError] = useState('');
+  const [isQuestionCategoryLoading, setIsQuestionCategoryLoading] = useState(true);
+  const [questionCategoryReloadKey, setQuestionCategoryReloadKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -72,6 +81,52 @@ export default function Home() {
     };
   }, [auth.accessToken]);
 
+  useEffect(() => {
+    let isMounted = true;
+    const cachedManifest = readCachedQuestionCategoryManifest();
+
+    if (cachedManifest) {
+      setQuestionCategoryManifest(cachedManifest);
+      setQuestionCategoryError('');
+      setIsQuestionCategoryLoading(false);
+    } else {
+      setIsQuestionCategoryLoading(true);
+    }
+
+    const loadQuestionCategoryManifest = async () => {
+      try {
+        const manifest = await fetchQuestionCategoryManifest();
+        if (!isMounted) {
+          return;
+        }
+
+        writeCachedQuestionCategoryManifest(manifest);
+        setQuestionCategoryManifest(manifest);
+        setQuestionCategoryError('');
+      } catch (manifestError: unknown) {
+        if (!isMounted || cachedManifest) {
+          return;
+        }
+
+        setQuestionCategoryError(
+          manifestError instanceof Error
+            ? manifestError.message
+            : '질문 카테고리 정보를 불러오는 중 오류가 발생했습니다.'
+        );
+      } finally {
+        if (isMounted) {
+          setIsQuestionCategoryLoading(false);
+        }
+      }
+    };
+
+    void loadQuestionCategoryManifest();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [questionCategoryReloadKey]);
+
   // 1단계 → 2단계: 질문 입력 후 카드 선택 화면으로
   const handleQuestionSubmit = (
     q: string,
@@ -86,7 +141,7 @@ export default function Home() {
 
   // 2단계 → 3단계: 카드 선택 확인 → API 호출
   const handleCardConfirm = async (cards: SelectedCardPayload[]) => {
-    if (!categorySelection) {
+    if (!categorySelection || !questionCategoryManifest) {
       setError('질문 카테고리를 다시 선택해주세요.');
       setAppState('error');
       return;
@@ -103,7 +158,7 @@ export default function Home() {
         categorySelection,
         uiContext: {
           locale: 'ko',
-          categoryVersion: QUESTION_CATEGORY_VERSION,
+          categoryVersion: questionCategoryManifest.version,
         },
       };
 
@@ -156,6 +211,12 @@ export default function Home() {
     setError('');
   };
 
+  const handleQuestionCategoryRetry = () => {
+    setQuestionCategoryError('');
+    setIsQuestionCategoryLoading(true);
+    setQuestionCategoryReloadKey((current) => current + 1);
+  };
+
   return (
     <main className="relative min-h-screen">
       {/* 배경 */}
@@ -169,7 +230,24 @@ export default function Home() {
         {/* 1단계: 질문 입력 */}
         {appState === 'idle' && (
           <div className="animate-fade-in">
-            <ReadingForm onSubmit={handleQuestionSubmit} isLoading={false} />
+            {questionCategoryManifest ? (
+              <ReadingForm
+                key={questionCategoryManifest.version}
+                categories={questionCategoryManifest.categories}
+                onSubmit={handleQuestionSubmit}
+                isLoading={false}
+              />
+            ) : questionCategoryError ? (
+              <ErrorDisplay message={questionCategoryError} onRetry={handleQuestionCategoryRetry} />
+            ) : (
+              <div className="mx-auto max-w-3xl px-4 pt-12">
+                <div className="glass-panel rounded-3xl px-6 py-12 text-center">
+                  <p className="font-body text-sm text-[var(--color-text-secondary)]">
+                    {isQuestionCategoryLoading ? '질문 카테고리 정보를 불러오는 중입니다.' : '질문 카테고리를 준비하고 있습니다.'}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
