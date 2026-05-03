@@ -1,5 +1,27 @@
 export type MainCategoryId = string;
 export type SubCategoryId = string;
+export type FollowUpQuestionType = 'single_select' | 'free_text_short';
+
+export interface FollowUpOption {
+  id: string;
+  label: string;
+}
+
+export interface FollowUpQuestion {
+  id: string;
+  prompt: string;
+  type: FollowUpQuestionType;
+  required?: boolean;
+  options?: FollowUpOption[];
+  helpText?: string;
+  maxLength?: number;
+}
+
+export interface FollowUpFlow {
+  flowId: string;
+  version: string;
+  questions: FollowUpQuestion[];
+}
 
 export interface SubCategoryConfig {
   id: SubCategoryId;
@@ -11,6 +33,7 @@ export interface SubCategoryConfig {
     questionSubtypeOneCard: string;
     questionSubtypeThreeCard: string;
   };
+  followUpFlow?: FollowUpFlow;
 }
 
 export interface MainCategoryConfig {
@@ -45,6 +68,14 @@ export function findSubCategory(
   subCategoryId?: SubCategoryId | null
 ) {
   return findMainCategory(categories, mainCategoryId)?.subcategories.find((subcategory) => subcategory.id === subCategoryId) ?? null;
+}
+
+export function findFollowUpFlow(
+  categories: MainCategoryConfig[],
+  mainCategoryId?: MainCategoryId | null,
+  subCategoryId?: SubCategoryId | null
+) {
+  return findSubCategory(categories, mainCategoryId, subCategoryId)?.followUpFlow ?? null;
 }
 
 export function getDefaultSubCategoryForMain(categories: MainCategoryConfig[], mainCategoryId: MainCategoryId) {
