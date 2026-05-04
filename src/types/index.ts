@@ -32,6 +32,20 @@ export interface UiContextPayload {
   categoryVersion: string;
 }
 
+export interface IntakeAnswerPayload {
+  questionId: string;
+  type: 'single_select' | 'free_text_short';
+  value: string;
+  label?: string;
+}
+
+export interface IntakeContextPayload {
+  flowId: string;
+  flowVersion: string;
+  answers: IntakeAnswerPayload[];
+  synthesizedQuestion?: string;
+}
+
 // 서버 응답의 카드 데이터
 export interface CardData {
   id: string;
@@ -45,6 +59,7 @@ export interface TarotRequest {
   selectedCardsJson: string;
   categorySelection: CategorySelection;
   uiContext: UiContextPayload;
+  intakeContext?: IntakeContextPayload;
 }
 
 export interface TarotResponse {
