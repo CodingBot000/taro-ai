@@ -4,7 +4,7 @@ import type { QuestionCategoryManifest } from '@/lib/questionCategories';
 const QUESTION_CATEGORY_MANIFEST_STORAGE_KEY = 'question-category-manifest';
 
 export async function fetchQuestionCategoryManifest(): Promise<QuestionCategoryManifest> {
-  const response = await fetch(buildApiUrl('/api/question-categories'), {
+  const response = await fetch(buildApiUrl('/api/tarot/question-categories'), {
     credentials: 'include',
     cache: 'no-store',
   });

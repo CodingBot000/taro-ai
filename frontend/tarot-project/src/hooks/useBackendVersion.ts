@@ -12,7 +12,7 @@ export function useBackendVersion(accessToken: string | null) {
 
     const loadBackendVersion = async () => {
       try {
-        const response = await fetch(buildApiUrl('/api/version'), {
+        const response = await fetch(buildApiUrl('/api/tarot/version'), {
           headers: accessToken
             ? {
                 Authorization: `Bearer ${accessToken}`,

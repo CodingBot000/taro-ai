@@ -10,7 +10,7 @@ export async function submitTarotReading({
   accessToken,
   requestBody,
 }: SubmitTarotReadingParams): Promise<TarotResponse> {
-  const response = await fetch(buildApiUrl('/api/tarot'), {
+  const response = await fetch(buildApiUrl('/api/tarot/readings'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

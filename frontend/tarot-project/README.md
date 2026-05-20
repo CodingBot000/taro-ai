@@ -1,6 +1,6 @@
 # 타로 - AI 타로 리딩 웹 서비스
 
-허깅페이스 모델과 Spring Boot API를 사용하는 Next.js 프론트엔드입니다. 사용자는 질문 카테고리와 심화 질문을 선택하고, 카드를 뽑은 뒤 AI 리딩 결과를 확인합니다.
+통합 Spring Boot API를 사용하는 Next.js 타로 프론트엔드입니다. 사용자는 질문 카테고리와 심화 질문을 선택하고, 카드를 뽑은 뒤 AI 리딩 결과를 확인합니다.
 
 ## 현재 아키텍처
 
@@ -9,7 +9,7 @@
     ↓
 [Next.js Frontend]
     ↓
-[Spring Boot API: api.heartsignal.cloud]
+[Integrated Spring Boot API: sajutok.com]
     ↓
 [Hugging Face Gradio Space]
     └── Qwen2.5-7B (ZeroGPU)
@@ -21,7 +21,7 @@
 
 - 프레임워크: Next.js 16 (App Router)
 - 스타일링: Tailwind CSS
-- API 통신: Spring Boot REST API
+- API 통신: 통합 Spring Boot REST API
 - 배포: 프론트엔드와 백엔드 분리 배포
 - 백엔드: Spring Boot + Hugging Face Spaces (Gradio + ZeroGPU)
 - 다국어: 자체 i18n 시스템 (한국어/영어 locale 전환)
@@ -39,10 +39,10 @@ npm run dev
 ## 환경 변수
 
 ```bash
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+NEXT_PUBLIC_API_BASE_URL=https://sajutok.com
 ```
 
-운영 배포에서는 `NEXT_PUBLIC_API_BASE_URL`을 실제 Spring Boot API 도메인으로 설정합니다.
+로컬 백엔드를 의도적으로 테스트할 때만 `NEXT_PUBLIC_API_BASE_URL=http://localhost:8080`으로 덮어씁니다.
 
 ## 검증 명령
 
